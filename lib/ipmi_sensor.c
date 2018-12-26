@@ -169,7 +169,8 @@ ipmi_sensor_print_fc_discrete(struct ipmi_intf *intf,
 	}
 
 	if (csv_output) {
-		printf("%s", sr->s_id);
+		printf("%d", sensor->sensor.type);
+		printf(",%s", sr->s_id);
 		if (sr->s_reading_valid) {
 			if (sr->s_has_analog_value) {
 				/* don't show discrete component */
@@ -193,6 +194,7 @@ ipmi_sensor_print_fc_discrete(struct ipmi_intf *intf,
 			/* output format
 			 *   id value units status thresholds....
 			 */
+			printf("%-3d | ", sensor->sensor.type);
 			printf("%-16s ", sr->s_id);
 			if (sr->s_reading_valid) {
 				if (sr->s_has_analog_value) {
@@ -265,9 +267,11 @@ dump_sensor_fc_thredshold_csv(
 	int thresh_available,
 	const char *thresh_status,
 	struct ipmi_rs *rsp,
-	struct sensor_reading *sr)
+	struct sensor_reading *sr,
+	struct sdr_record_common_sensor *sensor)
 {
-	printf("%s", sr->s_id);
+	printf("%d", sensor->sensor.type);
+	printf(",%s", sr->s_id);
 	if (sr->s_reading_valid) {
 		if (sr->s_has_analog_value)
 			printf(",%.3f,%s,%s",
@@ -306,8 +310,10 @@ dump_sensor_fc_thredshold(
 	int thresh_available,
 	const char *thresh_status,
 	struct ipmi_rs *rsp,
-	struct sensor_reading *sr)
+	struct sensor_reading *sr,
+	struct sdr_record_common_sensor *sensor)
 {
+	printf("%-3d | ", sensor->sensor.type);
 	printf("%-16s ", sr->s_id);
 	if (sr->s_reading_valid) {
 		if (sr->s_has_analog_value)
@@ -349,6 +355,7 @@ dump_sensor_fc_thredshold_verbose(
 	struct ipmi_rs *rsp,
 	struct sensor_reading *sr)
 {
+	printf("Type Code              : %d \n", sensor->sensor.type);
 	printf("Sensor ID              : %s (0x%x)\n",
 	       sr->s_id, sensor->keys.sensor_num);
 
@@ -466,10 +473,12 @@ ipmi_sensor_print_fc_threshold(struct ipmi_intf *intf,
 		thresh_available = 0;
 
 	if (csv_output) {
-		dump_sensor_fc_thredshold_csv(thresh_available, thresh_status, rsp, sr);
+		dump_sensor_fc_thredshold_csv(thresh_available, thresh_status,
+			                          rsp, sr, sensor);
 	} else {
 		if (verbose == 0) {
-			dump_sensor_fc_thredshold(thresh_available, thresh_status, rsp, sr);
+			dump_sensor_fc_thredshold(thresh_available, thresh_status,
+			                          rsp, sr, sensor);
 		} else {
 			dump_sensor_fc_thredshold_verbose(thresh_available, thresh_status,
 			                                  intf, sensor, rsp, sr);
